@@ -112,7 +112,35 @@ public final class DoStatement extends Statement {
         if (initFirstExprent != null && incFirstExprent != null) {
           buf.appendIndent(indent).append("for(").append(initFirstExprent.toJava(indent, tracer));
           incFirstExprent.inferExprType(null); //TODO: Find a better then null? For now just calls it to clear casts if needed
-          buf.append(" : ").append(incFirstExprent.toJava(indent, tracer)).append(") {").appendLineSeparator();
+
+          org.jetbrains.java.decompiler.struct.gen.VarType iterableType = incFirstExprent.getExprType();
+          org.jetbrains.java.decompiler.struct.gen.VarType loopVarType = initFirstExprent.getExprType();
+          boolean needCast = false;
+          if (!iterableType.isGeneric() && !loopVarType.equals(org.jetbrains.java.decompiler.struct.gen.VarType.VARTYPE_OBJECT) && iterableType.getArrayDim() == 0) {
+              needCast = true;
+          }
+
+          buf.append(" : ");
+          if (needCast) {
+            buf.append("((java.lang.Iterable<");
+            String castName = loopVarType.getArrayDim() == 0 ? getClassNameForPrimitiveType(loopVarType.getType()) : null;
+            if (castName == null) {
+              castName = ExprProcessor.getCastTypeName(loopVarType, java.util.Collections.emptyList());
+            } else {
+              castName = ExprProcessor.getCastTypeName(new org.jetbrains.java.decompiler.struct.gen.VarType(org.jetbrains.java.decompiler.code.CodeConstants.TYPE_OBJECT, 0, castName), java.util.Collections.emptyList());
+            }
+            buf.append(castName);
+            buf.append(">)");
+            if (incFirstExprent.getPrecedence() >= org.jetbrains.java.decompiler.modules.decompiler.exps.FunctionExprent.getPrecedence(org.jetbrains.java.decompiler.modules.decompiler.exps.FunctionExprent.FUNCTION_CAST)) {
+              buf.append("(").append(incFirstExprent.toJava(indent, tracer)).append(")");
+            } else {
+              buf.append(incFirstExprent.toJava(indent, tracer));
+            }
+            buf.append(")");
+          } else {
+            buf.append(incFirstExprent.toJava(indent, tracer));
+          }
+          buf.append(") {").appendLineSeparator();
           tracer.incrementCurrentSourceLine();
           buf.append(ExprProcessor.jmpWrapper(first, indent + 1, true, tracer));
           buf.appendIndent(indent).append("}").appendLineSeparator();
@@ -206,6 +234,20 @@ public final class DoStatement extends Statement {
 
   public void setLoopType(@NotNull LoopType loopType) {
     this.loopType = loopType;
+  }
+
+  private static String getClassNameForPrimitiveType(int type) {
+    return switch (type) {
+      case org.jetbrains.java.decompiler.code.CodeConstants.TYPE_BOOLEAN -> "java/lang/Boolean";
+      case org.jetbrains.java.decompiler.code.CodeConstants.TYPE_BYTE, org.jetbrains.java.decompiler.code.CodeConstants.TYPE_BYTECHAR -> "java/lang/Byte";
+      case org.jetbrains.java.decompiler.code.CodeConstants.TYPE_CHAR -> "java/lang/Character";
+      case org.jetbrains.java.decompiler.code.CodeConstants.TYPE_SHORT, org.jetbrains.java.decompiler.code.CodeConstants.TYPE_SHORTCHAR -> "java/lang/Short";
+      case org.jetbrains.java.decompiler.code.CodeConstants.TYPE_INT -> "java/lang/Integer";
+      case org.jetbrains.java.decompiler.code.CodeConstants.TYPE_LONG -> "java/lang/Long";
+      case org.jetbrains.java.decompiler.code.CodeConstants.TYPE_FLOAT -> "java/lang/Float";
+      case org.jetbrains.java.decompiler.code.CodeConstants.TYPE_DOUBLE -> "java/lang/Double";
+      default -> null;
+    };
   }
 
   public enum LoopType {
