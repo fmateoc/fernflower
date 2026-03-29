@@ -627,9 +627,6 @@ public class ConstExprent extends Exprent {
     if (constType == null) {
       constType = VarType.VARTYPE_UNKNOWN;
     }
-    else if (VarType.VARTYPE_STRING.equals(this.constType) || VarType.VARTYPE_CLASS.equals(this.constType)) {
-      return;
-    }
     this.constType = constType;
   }
 
