@@ -30,14 +30,14 @@ public class TestGenerics<A, B extends TestGenerics.Maps & List> {
    }// 45
 
    public void genericForEach() {
-      for(String s : field.keySet()) {// 48
+      for(String s : ((java.lang.Iterable<String>)field.keySet())) {// 48
          System.out.println(s);// 49
       }
 
    }// 51
 
    public void genericForEachWithCast() {
-      for(String s : (List)llstring.get(0)) {// 54
+      for(String s : ((java.lang.Iterable<String>)((List)llstring.get(0)))) {// 54
          System.out.println(s);// 55
       }
 
