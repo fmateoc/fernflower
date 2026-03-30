@@ -38,7 +38,7 @@ final class BreakpointsContextProvider extends WorkingContextProvider {
    public void clearContext(@NotNull Project project) {
       BreakpointManager breakpointManager = getBreakpointManager(project);// 45
 
-      for(Breakpoint breakpoint : ((java.lang.Iterable<Breakpoint>)breakpointManager.getBreakpoints())) {// 46
+      for(Breakpoint breakpoint : breakpointManager.getBreakpoints()) {// 46
          ApplicationManager.getApplication().runWriteAction(() -> breakpointManager.removeBreakpoint(breakpoint));// 47
       }
 
