@@ -183,6 +183,16 @@ public class VarExprent extends Exprent {
                 }
               }
             }
+            org.jetbrains.java.decompiler.struct.gen.generics.GenericMethodDescriptor genSig = method.methodStruct.getSignature();
+            if (genSig != null && genSig.parameterTypes != null) {
+              int currIndex = method.methodStruct.hasModifier(org.jetbrains.java.decompiler.code.CodeConstants.ACC_STATIC) ? 0 : 1;
+              for (int i = 0; i < genSig.parameterTypes.size(); i++) {
+                if (currIndex == originalIndex) {
+                  return genSig.parameterTypes.get(i);
+                }
+                currIndex += genSig.parameterTypes.get(i).getStackSize();
+              }
+            }
           }
 
           // then try from descriptor

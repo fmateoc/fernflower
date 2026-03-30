@@ -114,11 +114,43 @@ public final class DoStatement extends Statement {
           incFirstExprent.inferExprType(null); //TODO: Find a better then null? For now just calls it to clear casts if needed
 
           org.jetbrains.java.decompiler.struct.gen.VarType iterableType = incFirstExprent.getExprType();
+          if (incFirstExprent instanceof org.jetbrains.java.decompiler.modules.decompiler.exps.VarExprent) {
+              org.jetbrains.java.decompiler.struct.gen.VarType defType = ((org.jetbrains.java.decompiler.modules.decompiler.exps.VarExprent)incFirstExprent).getDefinitionType();
+              if (defType != null && defType instanceof org.jetbrains.java.decompiler.struct.gen.generics.GenericType) {
+                  iterableType = defType;
+              }
+          } else if (incFirstExprent instanceof org.jetbrains.java.decompiler.modules.decompiler.exps.InvocationExprent) {
+              org.jetbrains.java.decompiler.struct.gen.VarType defType = ((org.jetbrains.java.decompiler.modules.decompiler.exps.InvocationExprent)incFirstExprent).getExprType();
+              if (defType != null && defType instanceof org.jetbrains.java.decompiler.struct.gen.generics.GenericType) {
+                  iterableType = defType;
+              }
+          }
+
           org.jetbrains.java.decompiler.struct.gen.VarType loopVarType = initFirstExprent.getExprType();
           boolean needCast = false;
-          if (!iterableType.isGeneric() && !loopVarType.equals(org.jetbrains.java.decompiler.struct.gen.VarType.VARTYPE_OBJECT) && iterableType.getArrayDim() == 0) {
-              needCast = true;
+
+          if (iterableType.getArrayDim() == 0 && !loopVarType.equals(org.jetbrains.java.decompiler.struct.gen.VarType.VARTYPE_OBJECT)) {
+              if (incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_FUNCTION &&
+                  ((org.jetbrains.java.decompiler.modules.decompiler.exps.FunctionExprent)incFirstExprent).getFuncType() == org.jetbrains.java.decompiler.modules.decompiler.exps.FunctionExprent.FUNCTION_CAST) {
+                  needCast = true;
+              } else if (iterableType instanceof org.jetbrains.java.decompiler.struct.gen.generics.GenericType) {
+                  org.jetbrains.java.decompiler.struct.gen.generics.GenericType genType = (org.jetbrains.java.decompiler.struct.gen.generics.GenericType)iterableType;
+                  if (!genType.getArguments().isEmpty()) {
+                      org.jetbrains.java.decompiler.struct.gen.VarType elemType = genType.getArguments().get(0);
+                      if (elemType != null) {
+                          if (!org.jetbrains.java.decompiler.main.DecompilerContext.getStructContext().instanceOf(elemType.getValue(), loopVarType.getValue())) {
+                              needCast = true;
+                          }
+                      } else {
+                          needCast = true;
+                      }
+                  }
+              } else if (incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_NEW) {
+                  needCast = true;
+              }
           }
+
+          boolean needsDoubleCast = needCast && incFirstExprent.type != org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_FUNCTION;
 
           buf.append(" : ");
           if (needCast) {
@@ -131,6 +163,9 @@ public final class DoStatement extends Statement {
             }
             buf.append(castName);
             buf.append(">)");
+            if (needsDoubleCast) {
+              buf.append("(java.lang.Iterable)");
+            }
             if (incFirstExprent.getPrecedence() >= org.jetbrains.java.decompiler.modules.decompiler.exps.FunctionExprent.getPrecedence(org.jetbrains.java.decompiler.modules.decompiler.exps.FunctionExprent.FUNCTION_CAST)) {
               buf.append("(").append(incFirstExprent.toJava(indent, tracer)).append(")");
             } else {
