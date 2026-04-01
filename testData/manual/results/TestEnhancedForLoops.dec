@@ -13,14 +13,14 @@ public class TestEnhancedForLoops {
    }// 27
 
    public void forItterator() {
-      for(String string : ((java.lang.Iterable<String>)(java.lang.Iterable)(new ArrayList()))) {// 31
+      for(String string : ((java.lang.Iterable<String>)(new ArrayList()))) {// 31
          System.out.println(string);// 32
       }
 
    }// 34
 
    public void forItteratorUnboxing() {
-      for(int i : ((java.lang.Iterable<Integer>)(java.lang.Iterable)(new ArrayList()))) {// 38
+      for(int i : ((java.lang.Iterable<Integer>)(new ArrayList()))) {// 38
          System.out.println("Value: " + i);// 39
       }
 

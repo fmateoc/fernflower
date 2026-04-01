@@ -27,7 +27,7 @@ public class TestGenericForeach {
    }// 22
 
    public void test4(List<CharSequence> list) {
-      for(String s : ((java.lang.Iterable<String>)(java.lang.Iterable)list)) {// 25
+      for(String s : ((java.lang.Iterable<String>)list)) {// 25
          System.out.println(s);// 26
       }
 

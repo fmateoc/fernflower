@@ -84,7 +84,7 @@ public class n<F, S> {
    public static <T extends n<K, V>, K, V> List<K> a(Collection<T> var0) {
       ArrayList var1 = new ArrayList(var0.size());
 
-      for(n var3 : ((java.lang.Iterable<n>)(java.lang.Iterable)var0)) {
+      for(n var3 : ((java.lang.Iterable<n>)var0)) {
          var1.add(var3.a());
       }
 
