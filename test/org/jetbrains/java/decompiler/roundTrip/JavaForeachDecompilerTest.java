@@ -14,4 +14,9 @@ public class JavaForeachDecompilerTest extends JavaDecompilerRoundTripTestCase {
   public void testGenericForeach() {
     doTest("foreach/TestGenericForeach");
   }
+
+  @Test
+  public void testGenericForeach2() {
+    doTest("foreach/TestGenericForeach2");
+  }
 }

@@ -147,10 +147,47 @@ public final class DoStatement extends Statement {
                   }
               } else if (incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_NEW) {
                   needCast = true;
+              } else if (!(iterableType instanceof org.jetbrains.java.decompiler.struct.gen.generics.GenericType)) {
+                  if (incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_VAR ||
+                      incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_FIELD ||
+                      incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_ARRAY) {
+
+                      org.jetbrains.java.decompiler.struct.gen.VarType type = incFirstExprent.getExprType();
+                      if (incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_VAR) {
+                          org.jetbrains.java.decompiler.struct.gen.VarType defType = ((org.jetbrains.java.decompiler.modules.decompiler.exps.VarExprent)incFirstExprent).getDefinitionType();
+                          if (defType != null) type = defType;
+                      } else if (incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_FIELD) {
+                          incFirstExprent.inferExprType(null);
+                          type = incFirstExprent.getExprType();
+                      }
+
+                      if (!(type instanceof org.jetbrains.java.decompiler.struct.gen.generics.GenericType)) {
+                          org.jetbrains.java.decompiler.struct.StructClass cl = org.jetbrains.java.decompiler.main.DecompilerContext.getStructContext().getClass(type.getValue());
+                          if (cl != null && cl.getSignature() != null && cl.getSignature().fparameters != null && !cl.getSignature().fparameters.isEmpty()) {
+                              needCast = true;
+                          }
+                      }
+                  } else if (incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_INVOCATION) {
+                      org.jetbrains.java.decompiler.modules.decompiler.exps.InvocationExprent inv = (org.jetbrains.java.decompiler.modules.decompiler.exps.InvocationExprent)incFirstExprent;
+                      if (inv.getInstance() != null) {
+                          org.jetbrains.java.decompiler.struct.gen.VarType type = inv.getInstance().getExprType();
+                          if (inv.getInstance().type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_VAR) {
+                              org.jetbrains.java.decompiler.struct.gen.VarType defType = ((org.jetbrains.java.decompiler.modules.decompiler.exps.VarExprent)inv.getInstance()).getDefinitionType();
+                              if (defType != null) type = defType;
+                          } else if (inv.getInstance().type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_FIELD) {
+                              inv.getInstance().inferExprType(null);
+                              type = inv.getInstance().getExprType();
+                          }
+
+                          if (!(type instanceof org.jetbrains.java.decompiler.struct.gen.generics.GenericType)) {
+                              needCast = true;
+                          }
+                      }
+                  }
               }
           }
 
-          boolean needsDoubleCast = needCast && incFirstExprent.type != org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_FUNCTION;
+          boolean needsDoubleCast = false;
 
           buf.append(" : ");
           if (needCast) {
