@@ -25,7 +25,7 @@ public class d {
    public static void b() {
       boolean var2 = b;
 
-      for(a var1 : a()) {
+      for(a var1 : ((List<a>)a())) {
          var1.i();
          if (var2) {
             break;

@@ -1,4 +1,5 @@
 import java.text.DecimalFormat;
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 public class a5 {
@@ -19,7 +20,7 @@ public class a5 {
    private static void a() {
       boolean var2 = a7.b;
 
-      for(al var1 : ((java.lang.Iterable<al>)((ai)a.a()).a())) {
+      for(al var1 : ((Collection<al>)((ai)a.a()).a())) {
          System.out.println(var1.a().a() + b[3] + var1.a().b() + "\n" + DecimalFormat.getNumberInstance().format(var1.d()) + " " + var1.a().c() + b[4] + DecimalFormat.getNumberInstance().format(var1.e()) + " " + var1.a().c() + b[2] + DecimalFormat.getNumberInstance().format(var1.f()) + " " + var1.a().c() + "\n");
          if (var2) {
             break;

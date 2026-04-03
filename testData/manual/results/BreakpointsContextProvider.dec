@@ -11,6 +11,7 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.tasks.TaskBundle;
 import com.intellij.tasks.context.WorkingContextProvider;
+import java.util.List;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,7 +39,7 @@ final class BreakpointsContextProvider extends WorkingContextProvider {
    public void clearContext(@NotNull Project project) {
       BreakpointManager breakpointManager = getBreakpointManager(project);// 45
 
-      for(Breakpoint breakpoint : ((java.lang.Iterable<Breakpoint>)breakpointManager.getBreakpoints())) {// 46
+      for(Breakpoint breakpoint : ((List<Breakpoint>)breakpointManager.getBreakpoints())) {// 46
          ApplicationManager.getApplication().runWriteAction(() -> breakpointManager.removeBreakpoint(breakpoint));// 47
       }
 
@@ -47,114 +48,114 @@ final class BreakpointsContextProvider extends WorkingContextProvider {
 
 class 'com/intellij/tasks/context/java/BreakpointsContextProvider' {
    method 'getId ()Ljava/lang/String;' {
-      0      18
-      1      18
-      2      18
+      0      19
+      1      19
+      2      19
    }
 
    method 'getDescription ()Ljava/lang/String;' {
-      0      22
-      1      22
-      2      22
-      6      22
-      7      22
-      8      22
-      11      22
+      0      23
+      1      23
+      2      23
+      6      23
+      7      23
+      8      23
+      11      23
    }
 
    method 'saveContext (Lcom/intellij/openapi/project/Project;Lorg/jdom/Element;)V' {
-      10      26
-      11      26
-      12      26
-      13      26
-      14      26
-      15      26
-      16      26
-      17      26
-      18      27
+      10      27
+      11      27
+      12      27
+      13      27
+      14      27
+      15      27
+      16      27
+      17      27
+      18      28
    }
 
    method 'getBreakpointManager (Lcom/intellij/openapi/project/Project;)Lcom/intellij/debugger/ui/breakpoints/BreakpointManager;' {
-      8      30
-      9      30
-      a      30
-      b      30
-      c      30
-      d      30
-      e      30
-      17      30
+      8      31
+      9      31
+      a      31
+      b      31
+      c      31
+      d      31
+      e      31
+      17      31
    }
 
    method 'loadContext (Lcom/intellij/openapi/project/Project;Lorg/jdom/Element;)V' {
-      11      34
-      12      34
-      13      34
-      14      34
-      15      34
-      16      34
-      17      34
-      18      34
-      19      34
-      1a      34
-      1b      34
-      1c      35
+      11      35
+      12      35
+      13      35
+      14      35
+      15      35
+      16      35
+      17      35
+      18      35
+      19      35
+      1a      35
+      1b      35
+      1c      36
    }
 
    method 'lambda$clearContext$0 (Lcom/intellij/debugger/ui/breakpoints/BreakpointManager;Lcom/intellij/debugger/ui/breakpoints/Breakpoint;)V' {
-      0      41
-      1      41
-      2      41
-      3      41
-      4      41
-      5      41
+      0      42
+      1      42
+      2      42
+      3      42
+      4      42
+      5      42
    }
 
    method 'clearContext (Lcom/intellij/openapi/project/Project;)V' {
-      9      38
-      a      38
-      b      38
-      c      38
-      d      38
-      e      40
-      f      40
-      10      40
-      11      40
-      12      40
-      13      40
-      14      40
-      15      40
-      16      40
-      17      40
-      21      40
-      22      40
-      23      40
-      24      40
-      25      40
-      26      40
-      27      40
-      28      40
-      29      40
-      2a      40
-      2b      40
-      2c      41
-      2d      41
-      2e      41
-      37      41
-      3f      44
+      9      39
+      a      39
+      b      39
+      c      39
+      d      39
+      e      41
+      f      41
+      10      41
+      11      41
+      12      41
+      13      41
+      14      41
+      15      41
+      16      41
+      17      41
+      21      41
+      22      41
+      23      41
+      24      41
+      25      41
+      26      41
+      27      41
+      28      41
+      29      41
+      2a      41
+      2b      41
+      2c      42
+      2d      42
+      2e      42
+      37      42
+      3f      45
    }
 }
 
 Lines mapping:
-21 <-> 19
-26 <-> 23
-31 <-> 27
-32 <-> 28
-35 <-> 31
-40 <-> 35
-41 <-> 36
-45 <-> 39
-46 <-> 41
-47 <-> 42
-49 <-> 45
+21 <-> 20
+26 <-> 24
+31 <-> 28
+32 <-> 29
+35 <-> 32
+40 <-> 36
+41 <-> 37
+45 <-> 40
+46 <-> 42
+47 <-> 43
+49 <-> 46
 Not mapped:
 48
