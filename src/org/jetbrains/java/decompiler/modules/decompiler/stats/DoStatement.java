@@ -133,7 +133,12 @@ public final class DoStatement extends Statement {
               if (incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_FUNCTION &&
                   ((org.jetbrains.java.decompiler.modules.decompiler.exps.FunctionExprent)incFirstExprent).getFuncType() == org.jetbrains.java.decompiler.modules.decompiler.exps.FunctionExprent.FUNCTION_CAST) {
                   needCast = true;
-              } else if (iterableType instanceof org.jetbrains.java.decompiler.struct.gen.generics.GenericType) {
+              } else if (!(iterableType instanceof org.jetbrains.java.decompiler.struct.gen.generics.GenericType)) {
+                  if (iterableType.getValue().equals("java/util/List") || iterableType.getValue().equals("java/util/Collection") || iterableType.getValue().equals("java/util/Set") || org.jetbrains.java.decompiler.main.DecompilerContext.getStructContext().instanceOf(iterableType.getValue(), "java/lang/Iterable")) {
+                      needCast = true;
+                  }
+              }
+              if (iterableType instanceof org.jetbrains.java.decompiler.struct.gen.generics.GenericType) {
                   org.jetbrains.java.decompiler.struct.gen.generics.GenericType genType = (org.jetbrains.java.decompiler.struct.gen.generics.GenericType)iterableType;
                   if (!genType.getArguments().isEmpty()) {
                       org.jetbrains.java.decompiler.struct.gen.VarType elemType = genType.getArguments().get(0);
@@ -165,6 +170,10 @@ public final class DoStatement extends Statement {
                           org.jetbrains.java.decompiler.struct.StructClass cl = org.jetbrains.java.decompiler.main.DecompilerContext.getStructContext().getClass(type.getValue());
                           if (cl != null && cl.getSignature() != null && cl.getSignature().fparameters != null && !cl.getSignature().fparameters.isEmpty()) {
                               needCast = true;
+                          } else if (cl == null) {
+                              if (type.getValue().equals("java/util/List") || type.getValue().equals("java/util/Collection") || type.getValue().equals("java/util/Set") || org.jetbrains.java.decompiler.main.DecompilerContext.getStructContext().instanceOf(type.getValue(), "java/lang/Iterable")) {
+                                  needCast = true;
+                              }
                           }
                       }
                   } else if (incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_INVOCATION) {
@@ -180,7 +189,14 @@ public final class DoStatement extends Statement {
                           }
 
                           if (!(type instanceof org.jetbrains.java.decompiler.struct.gen.generics.GenericType)) {
-                              needCast = true;
+                              org.jetbrains.java.decompiler.struct.StructClass cl = org.jetbrains.java.decompiler.main.DecompilerContext.getStructContext().getClass(type.getValue());
+                              if (cl != null && cl.getSignature() != null && cl.getSignature().fparameters != null && !cl.getSignature().fparameters.isEmpty()) {
+                                  needCast = true;
+                              } else if (cl == null) {
+                                  if (type.getValue().equals("java/util/List") || type.getValue().equals("java/util/Collection") || type.getValue().equals("java/util/Set") || org.jetbrains.java.decompiler.main.DecompilerContext.getStructContext().instanceOf(type.getValue(), "java/lang/Iterable")) {
+                                      needCast = true;
+                                  }
+                              }
                           }
                       }
                   }
@@ -191,17 +207,33 @@ public final class DoStatement extends Statement {
 
           buf.append(" : ");
           if (needCast) {
-            buf.append("((java.lang.Iterable<");
             String castName = loopVarType.getArrayDim() == 0 ? getClassNameForPrimitiveType(loopVarType.getType()) : null;
             if (castName == null) {
               castName = ExprProcessor.getCastTypeName(loopVarType, java.util.Collections.emptyList());
             } else {
               castName = ExprProcessor.getCastTypeName(new org.jetbrains.java.decompiler.struct.gen.VarType(org.jetbrains.java.decompiler.code.CodeConstants.TYPE_OBJECT, 0, castName), java.util.Collections.emptyList());
             }
+
+            String colName = null;
+            if (iterableType != null && iterableType.getType() == org.jetbrains.java.decompiler.code.CodeConstants.TYPE_OBJECT && iterableType.getArrayDim() == 0) {
+                if (iterableType.getValue().equals("java/util/List") || iterableType.getValue().equals("java/util/Collection") || iterableType.getValue().equals("java/util/Set") || org.jetbrains.java.decompiler.main.DecompilerContext.getStructContext().instanceOf(iterableType.getValue(), "java/lang/Iterable")) {
+                    colName = ExprProcessor.getCastTypeName(iterableType, java.util.Collections.emptyList());
+                }
+            }
+            if (colName == null) {
+                colName = "java.lang.Iterable";
+            }
+
+            if (iterableType instanceof org.jetbrains.java.decompiler.struct.gen.generics.GenericType) {
+                // If it is already a GenericType with differing type arguments (e.g. List<CharSequence> -> String),
+                // fallback to a generic Iterable cast to avoid syntax errors like List<CharSequence><String>
+                colName = "java.lang.Iterable";
+            }
+            buf.append("((").append(colName).append("<");
             buf.append(castName);
             buf.append(">)");
             if (needsDoubleCast) {
-              buf.append("(java.lang.Iterable)");
+              buf.append("(").append(colName).append(")");
             }
             if (incFirstExprent.getPrecedence() >= org.jetbrains.java.decompiler.modules.decompiler.exps.FunctionExprent.getPrecedence(org.jetbrains.java.decompiler.modules.decompiler.exps.FunctionExprent.FUNCTION_CAST)) {
               buf.append("(").append(incFirstExprent.toJava(indent, tracer)).append(")");
