@@ -116,12 +116,12 @@ public final class DoStatement extends Statement {
           org.jetbrains.java.decompiler.struct.gen.VarType iterableType = incFirstExprent.getExprType();
           if (incFirstExprent instanceof org.jetbrains.java.decompiler.modules.decompiler.exps.VarExprent) {
               org.jetbrains.java.decompiler.struct.gen.VarType defType = ((org.jetbrains.java.decompiler.modules.decompiler.exps.VarExprent)incFirstExprent).getDefinitionType();
-              if (defType != null && defType instanceof org.jetbrains.java.decompiler.struct.gen.generics.GenericType) {
+              if (defType != null) {
                   iterableType = defType;
               }
           } else if (incFirstExprent instanceof org.jetbrains.java.decompiler.modules.decompiler.exps.InvocationExprent) {
               org.jetbrains.java.decompiler.struct.gen.VarType defType = ((org.jetbrains.java.decompiler.modules.decompiler.exps.InvocationExprent)incFirstExprent).getExprType();
-              if (defType != null && defType instanceof org.jetbrains.java.decompiler.struct.gen.generics.GenericType) {
+              if (defType != null) {
                   iterableType = defType;
               }
           }
@@ -130,77 +130,35 @@ public final class DoStatement extends Statement {
           boolean needCast = false;
 
           if (iterableType.getArrayDim() == 0 && !loopVarType.equals(org.jetbrains.java.decompiler.struct.gen.VarType.VARTYPE_OBJECT)) {
-              if (incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_FUNCTION &&
-                  ((org.jetbrains.java.decompiler.modules.decompiler.exps.FunctionExprent)incFirstExprent).getFuncType() == org.jetbrains.java.decompiler.modules.decompiler.exps.FunctionExprent.FUNCTION_CAST) {
+            if (incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_FUNCTION &&
+                ((org.jetbrains.java.decompiler.modules.decompiler.exps.FunctionExprent)incFirstExprent).getFuncType() == org.jetbrains.java.decompiler.modules.decompiler.exps.FunctionExprent.FUNCTION_CAST) {
+              needCast = true;
+            } else if (iterableType instanceof org.jetbrains.java.decompiler.struct.gen.generics.GenericType) {
+              org.jetbrains.java.decompiler.struct.gen.generics.GenericType genType = (org.jetbrains.java.decompiler.struct.gen.generics.GenericType)iterableType;
+              if (!genType.getArguments().isEmpty()) {
+                org.jetbrains.java.decompiler.struct.gen.VarType elemType = genType.getArguments().get(0);
+                if (elemType != null) {
+                  if (!org.jetbrains.java.decompiler.main.DecompilerContext.getStructContext().instanceOf(elemType.getValue(), loopVarType.getValue())) {
+                    needCast = true;
+                  }
+                } else {
                   needCast = true;
-              } else if (!(iterableType instanceof org.jetbrains.java.decompiler.struct.gen.generics.GenericType)) {
-                  if (iterableType.getValue().equals("java/util/List") || iterableType.getValue().equals("java/util/Collection") || iterableType.getValue().equals("java/util/Set") || org.jetbrains.java.decompiler.main.DecompilerContext.getStructContext().instanceOf(iterableType.getValue(), "java/lang/Iterable")) {
-                      needCast = true;
-                  }
+                }
               }
-              if (iterableType instanceof org.jetbrains.java.decompiler.struct.gen.generics.GenericType) {
-                  org.jetbrains.java.decompiler.struct.gen.generics.GenericType genType = (org.jetbrains.java.decompiler.struct.gen.generics.GenericType)iterableType;
-                  if (!genType.getArguments().isEmpty()) {
-                      org.jetbrains.java.decompiler.struct.gen.VarType elemType = genType.getArguments().get(0);
-                      if (elemType != null) {
-                          if (!org.jetbrains.java.decompiler.main.DecompilerContext.getStructContext().instanceOf(elemType.getValue(), loopVarType.getValue())) {
-                              needCast = true;
-                          }
-                      } else {
-                          needCast = true;
-                      }
-                  }
-              } else if (incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_NEW) {
-                  needCast = true;
-              } else if (!(iterableType instanceof org.jetbrains.java.decompiler.struct.gen.generics.GenericType)) {
-                  if (incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_VAR ||
-                      incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_FIELD ||
-                      incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_ARRAY) {
-
-                      org.jetbrains.java.decompiler.struct.gen.VarType type = incFirstExprent.getExprType();
-                      if (incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_VAR) {
-                          org.jetbrains.java.decompiler.struct.gen.VarType defType = ((org.jetbrains.java.decompiler.modules.decompiler.exps.VarExprent)incFirstExprent).getDefinitionType();
-                          if (defType != null) type = defType;
-                      } else if (incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_FIELD) {
-                          incFirstExprent.inferExprType(null);
-                          type = incFirstExprent.getExprType();
-                      }
-
-                      if (!(type instanceof org.jetbrains.java.decompiler.struct.gen.generics.GenericType)) {
-                          org.jetbrains.java.decompiler.struct.StructClass cl = org.jetbrains.java.decompiler.main.DecompilerContext.getStructContext().getClass(type.getValue());
-                          if (cl != null && cl.getSignature() != null && cl.getSignature().fparameters != null && !cl.getSignature().fparameters.isEmpty()) {
-                              needCast = true;
-                          } else if (cl == null) {
-                              if (type.getValue().equals("java/util/List") || type.getValue().equals("java/util/Collection") || type.getValue().equals("java/util/Set") || org.jetbrains.java.decompiler.main.DecompilerContext.getStructContext().instanceOf(type.getValue(), "java/lang/Iterable")) {
-                                  needCast = true;
-                              }
-                          }
-                      }
-                  } else if (incFirstExprent.type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_INVOCATION) {
-                      org.jetbrains.java.decompiler.modules.decompiler.exps.InvocationExprent inv = (org.jetbrains.java.decompiler.modules.decompiler.exps.InvocationExprent)incFirstExprent;
-                      if (inv.getInstance() != null) {
-                          org.jetbrains.java.decompiler.struct.gen.VarType type = inv.getInstance().getExprType();
-                          if (inv.getInstance().type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_VAR) {
-                              org.jetbrains.java.decompiler.struct.gen.VarType defType = ((org.jetbrains.java.decompiler.modules.decompiler.exps.VarExprent)inv.getInstance()).getDefinitionType();
-                              if (defType != null) type = defType;
-                          } else if (inv.getInstance().type == org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent.EXPRENT_FIELD) {
-                              inv.getInstance().inferExprType(null);
-                              type = inv.getInstance().getExprType();
-                          }
-
-                          if (!(type instanceof org.jetbrains.java.decompiler.struct.gen.generics.GenericType)) {
-                              org.jetbrains.java.decompiler.struct.StructClass cl = org.jetbrains.java.decompiler.main.DecompilerContext.getStructContext().getClass(type.getValue());
-                              if (cl != null && cl.getSignature() != null && cl.getSignature().fparameters != null && !cl.getSignature().fparameters.isEmpty()) {
-                                  needCast = true;
-                              } else if (cl == null) {
-                                  if (type.getValue().equals("java/util/List") || type.getValue().equals("java/util/Collection") || type.getValue().equals("java/util/Set") || org.jetbrains.java.decompiler.main.DecompilerContext.getStructContext().instanceOf(type.getValue(), "java/lang/Iterable")) {
-                                      needCast = true;
-                                  }
-                              }
-                          }
-                      }
-                  }
+            } else {
+              // we have a non-array, non-generic type. It must be a raw type.
+              // if it's an Iterable (or subclass), we need a cast.
+              org.jetbrains.java.decompiler.struct.StructClass cl = org.jetbrains.java.decompiler.main.DecompilerContext.getStructContext().getClass(iterableType.getValue());
+              if (cl != null && cl.getSignature() != null && cl.getSignature().fparameters != null && !cl.getSignature().fparameters.isEmpty()) {
+                needCast = true;
+              } else if (cl == null && org.jetbrains.java.decompiler.main.DecompilerContext.getStructContext().instanceOf(iterableType.getValue(), "java/lang/Iterable")) {
+                needCast = true;
+              } else if (iterableType.getValue().equals("java/util/List") || iterableType.getValue().equals("java/util/Collection") || iterableType.getValue().equals("java/util/Set")) {
+                needCast = true;
+              } else if (cl == null && iterableType.getValue().equals("java/util/ArrayList")) {
+                needCast = true;
               }
+            }
           }
 
           boolean needsDoubleCast = false;
