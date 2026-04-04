@@ -190,8 +190,17 @@ public final class DoStatement extends Statement {
             buf.append("((").append(colName).append("<");
             buf.append(castName);
             buf.append(">)");
+
             if (needsDoubleCast) {
-              buf.append("(").append(colName).append(")");
+                String baseName = null;
+                if (iterableType != null && iterableType.getType() == org.jetbrains.java.decompiler.code.CodeConstants.TYPE_OBJECT && iterableType.getArrayDim() == 0) {
+                    baseName = ExprProcessor.getCastTypeName(iterableType, java.util.Collections.emptyList());
+                }
+                if (baseName != null) {
+                    buf.append("(").append(baseName).append(")");
+                } else {
+                    buf.append("(").append(colName).append(")");
+                }
             }
             if (incFirstExprent.getPrecedence() >= org.jetbrains.java.decompiler.modules.decompiler.exps.FunctionExprent.getPrecedence(org.jetbrains.java.decompiler.modules.decompiler.exps.FunctionExprent.FUNCTION_CAST)) {
               buf.append("(").append(incFirstExprent.toJava(indent, tracer)).append(")");
